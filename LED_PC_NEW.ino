@@ -2,14 +2,14 @@
 #include <EEPROM.h>
 #include <Bounce2.h>
 
-#define FAN_LED 12 //Кол-во LED в кулере
-#define FP_LED  18 //Кол-во LED в ленте на передней панели
+#define FAN_LED 12 //Number of LEDs in cooler
+#define FP_LED  18 //Number of LEDs in strip on the front panel (AEROcool cylon)
 
-#define FAN_PIN 6 //Кулер
-#define FP_PIN  5 //Передняя панель
+#define FAN_PIN 6 //Cooler
+#define FP_PIN  5 //Front panel
 
-#define BRIGHTNESS         100 //Задаем яркость по умолчанию
-#define FRAMES_PER_SECOND  60  //Частота обновления 
+#define BRIGHTNESS         100 //Brightness 
+#define FRAMES_PER_SECOND  60  //Update Frequency
 
 #define dly 100; //DELAY
 
@@ -29,16 +29,16 @@ DEFINE_GRADIENT_PALETTE( Pink_Orange ) {
 CRGBPalette16 P3 = Pink_Orange;
 
 int butPin = 2;
-Bounce debouncer = Bounce(); // Устранитель дребезга контактов
+Bounce debouncer = Bounce(); // Button debouncer
 
-CRGB fp[FP_LED];             //Переменные для работы со светодиодами
+CRGB fp[FP_LED];             //Idk, i forgot what it is
 CRGB fan[FAN_LED];
 
-uint8_t gHue = 0;            // Крутилка для радуги
+uint8_t gHue = 0;            // Wheel for rainbow
 
-uint8_t currPattern = EEPROM.read(0);    //Переменная в которой лежит текущий режим работы
+uint8_t currPattern = EEPROM.read(0);    //Variable for current mode
 
-unsigned long timer = millis();          //Таймер для задержки сохранения режима работы
+unsigned long timer = millis();          //Timer for mode saving
 bool flag = false;
 
 //void fadeall() { for(int i = 0; i < NUM_LEDS; i++) { leds[i].nscale8(250); } }
@@ -74,37 +74,37 @@ void Cylon() {
 
 */
 
-//Постоянный розовый цвет______________
+//PINK______________
 void Const_Pink(){ 
   fill_solid(fp, FP_LED,0xfa055f);
   fill_solid(fan, FAN_LED,0xfa055f);
 }
 
-//Постоянный оранжевый цвет_____________
+//ORANGE_____________
 void Const_Orange(){ 
   fill_solid(fp, FP_LED,0xff4f03);
   fill_solid(fan, FAN_LED,0xff4f03);
 }
 
-//Постоянный оранжевый цвет___________
+//MINT___________
 void Const_Mint(){ 
   fill_solid(fp, FP_LED,0x3fff5c);
   fill_solid(fan, FAN_LED,0x3fff5c);
 }
 
-//Постоянный корраловый цвет___________
+//CORAL___________
 void Const_Coral(){ 
   fill_solid(fp, FP_LED,0xff3f1c);
   fill_solid(fan, FAN_LED,0xff3f1c);
 }
 
-//Постоянный вишневый цвет_____________
+//CHERRY_____________
 void Const_Cherry(){ 
   fill_solid(fp, FP_LED,0x6e0707);
   fill_solid(fan, FAN_LED,0x6e0707);
 }
 
-//Градиент_____________________________
+//GRADIENT_____________________________
 void GradientMO(){ 
 
 for (int i = 0; i < FP_LED; i++) {
@@ -136,24 +136,24 @@ for (int i = 0; i < FAN_LED; i++) {
 }
 }
 
-//Радуга_______________________________
+//RAINBOW_______________________________
 void Gayshit(){
   fill_rainbow( fp, FP_LED, gHue, 7);
   fill_rainbow( fan, FAN_LED, gHue, 7);
 }
 
-//Отключить подсветку__________________
+//TURN OFF__________________
 void Dark(){
   fill_solid(fp, FP_LED,0x000000);
   fill_solid(fan, FAN_LED,0x000000);
 }
 
-//_________________________________________РЕЖИМЫ СВЕЧЕНИЯ_______________________________________________
+//_________________________________________MODES_______________________________________________
 typedef void (*SimplePatternList[])();
 SimplePatternList Patterns = {Const_Pink, Const_Orange, Const_Mint, Const_Coral, Const_Cherry, Gayshit, GradientMO, GradientPM, GradientPO, Dark};
 //_______________________________________________________________________________________________________
 
-//Переключатель режимов
+//MODE SWITCHER
 void NextPattern(){
   currPattern += 1;
   Serial.print(currPattern);
@@ -187,7 +187,7 @@ void SaveMode(){
       EEPROM.put(0, byte(currPattern));
       }
 }
-/*_______________________________ИНИЦИАЛИЗАЦИЯ____________________________________*/
+/*_______________________________INIT____________________________________*/
 void setup() {
   Serial.begin(9600);
   Serial.print("INIZIALIZATION");
@@ -203,11 +203,11 @@ void setup() {
   if (currPattern >= (sizeof(Patterns)/sizeof((Patterns)[0]))) { currPattern = 0; }
 }
 
-/*_______________________________ГЛАВНЫЙ ЦИКЛ_______________________________________*/
+/*_______________________________MAIN CYCLE_______________________________________*/
 void loop() {
-    Patterns[currPattern](); //Устанавливаем режим
-    button();                //Ждем сигнала с кнопки
-    SaveMode();              //Сохраняем режим в случае, если кнопка была нажата и прошло более 10 секунд с этого момента
+    Patterns[currPattern](); //SET MODE
+    button();                //WAIT FOR SIGNAL FROM BUTTON
+    SaveMode();              //SAVE MODE IF IT PASSED 10 SEC AFTER LAST MODE SWITCH
     
     FastLED.show();  
     FastLED.delay(1000/FRAMES_PER_SECOND);
